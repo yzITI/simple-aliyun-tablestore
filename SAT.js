@@ -27,7 +27,7 @@ exports.client = c => c ? client = c : client
 const condition = c => {
   if (typeof c == 'string') c = [c]
   const rc = c.shift()
-  c.map(x => new TS.SingleColumnCondition(x[0], x[2], constants[x[1]])
+  c.map(x => new TS.SingleColumnCondition(x[0], x[2], constants[x[1]]))
   let colCond = null
   if (c.length) {
     if (c.length > 1) {
