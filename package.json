@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "tablestore": "^5.0.7"
+  }
+}
