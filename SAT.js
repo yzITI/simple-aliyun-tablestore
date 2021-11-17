@@ -58,7 +58,8 @@ const columns = attrs => {
 }
 
 // Main interface
-exports.table = (table) => client && {
-  get: (k, cols = []) => client.getRow({ ...params(k, table), columnsToGet: cols }).then(({ row }) => wrap(k, row)),
-  put: (k, attributes, condition = 'I') => client.putRow({ ...params(k, table, condition), attributeColumns: columns(attributes) })
+exports.table = (t) => client && {
+  get: (k, cols = []) => client.getRow({ ...params(k, t), columnsToGet: cols }).then(({ row }) => wrap(k, row)),
+  put: (k, attrs, c = 'I') => client.putRow({ ...params(k, t, c), attributeColumns: columns(attrs) }),
+  del: (k, c = 'I') => client.deleteRow(params(k, t, c))
 }
