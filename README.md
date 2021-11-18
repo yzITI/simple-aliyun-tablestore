@@ -20,8 +20,9 @@ const SAT = require('./SAT.js')
 SAT.init('endpoint', 'instance', 'akId', 'akSecret')
 
 async function test () {
-  await SAT.table('tablename').put('rowid', { hello: 'world!' })
-  const res = await SAT.table('tablename').get('rowid')
+  const opt = SAT.table('tablename')
+  await opt.put('rowid', { hello: 'world!' })
+  const res = await opt.get('rowid')
   console.log(res)
 }
 test()
@@ -67,7 +68,8 @@ c = ['E', ['num', '==', 10], ['space', '>', 10]]
 
 若需要多个主键或自定义主键，需要在生成表的操作对象时指定，并在传入主键时按顺序传入数组，例如：
 ```js
-SAT.table('tablename', ['pk1', 'pk2']).get(['pk1value', 123])
+const opt = SAT.table('tablename', ['pk1', 'pk2'])
+const res = await opt.get(['pk1value', 123])
 ```
 
 ## 接口

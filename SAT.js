@@ -101,6 +101,8 @@ exports.table = (t, pks = ['id']) => client && {
       } else puts[key] = a
     }
     return client.updateRow({ ...params(k, c, t, pks), updateOfAttributeColumns: [{ 'PUT': columns(puts) }, {'DELETE_ALL': dA }, { 'INCREMENT': columns(incs) }] })
+  },
+  search: (query) => {
   }
 }
 
