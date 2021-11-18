@@ -6,6 +6,8 @@
 3. 表操作：不支持对表的操作，仅支持对数据的读写。
 4. 整数：整数数字会被自动转化为整数类型。
 
+[接口文档](#接口)
+
 ## 开始使用
 
 为了支持函数计算等应用场景，请直接复制`/SAT.js`。
@@ -23,6 +25,8 @@ async function test () {
 }
 test()
 ```
+
+[更多例子](./example.js)
 
 ## 约定
 
@@ -57,3 +61,37 @@ c = ['E', ['num', '==', 10], ['space', '>', 10]]
 上述例子中的条件表示：期望行存在 and num属性值等于10 and space属性值大于10
 
 当不需要列条件时，条件变量`c`可以省略为一个字符串，描述期望的行条件。
+
+## 接口
+
+调用`SAT.table('tablename')`生成操作对象
+
+[例子](./example.js)
+
+### 基础接口
+
+```js
+// 查询单行数据
+SAT.table('tablename').get('id', cols = [])
+
+// 覆盖单行数据
+SAT.table('tablename').put('id', { keys: 'values' }, c = 'I')
+
+// 删除单行数据
+SAT.table('tablename').del('id', c = 'I')
+```
+
+### 高级接口
+
+```js
+// 扫描连续的id
+// 返回对象，键为行对应的id，值为行数据对象
+SAT.table('tablename').getRange('startid', 'endid', cols = [])
+
+// 更新
+// u为更新内容：
+// 若u不为对象，则理解为更新属性值
+// 若u为对象且u.del为真，则删除此属性
+// 若u为对象且u.inc存在，则自增此属性，步长为u.inc
+SAT.table('tablename').update('id', { 'keyToUpdate': u }, c = 'I')
+```

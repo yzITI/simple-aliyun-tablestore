@@ -26,16 +26,18 @@ exports.init = (endpoint, instancename, accessKeyId, accessKeySecret, securityTo
 exports.client = c => c ? client = c : client
 
 // utils functions
+const parseInt = v => Number.isInteger(v) ? TS.Long.fromNumber(v) : v
+
 const condition = c => {
   if (typeof c == 'string') c = [c]
   const rc = c.shift()
-  c.map(x => new TS.SingleColumnCondition(x[0], x[2], constants[x[1]]))
+  cs = c.map(x => new TS.SingleColumnCondition(x[0], parseInt(x[2]), constants[x[1]]))
   let colCond = null
-  if (c.length) {
-    if (c.length > 1) {
+  if (cs.length) {
+    if (cs.length > 1) {
       colCond = new TS.CompositeCondition(constants.AND)
-      for (const cc of c) colCond.addSubCondition(cc)
-    } else colCond = c[0]
+      for (const cc of cs) colCond.addSubCondition(cc)
+    } else colCond = cs[0]
   }
   return new TS.Condition(constants[rc], colCond)
 }
@@ -54,9 +56,7 @@ const wrap = (k, row) => {
 const columns = as => {
   delete as.id
   const res = []
-  for (const k in as) {
-    res.push({ [k]: Number.isInteger(as[k]) ? TS.Long.fromNumber(as[k]) : as[k] })
-  }
+  for (const k in as) res.push({ [k]: parseInt(as[k]) })
   return res
 }
 
@@ -83,5 +83,16 @@ exports.table = (t) => client && {
       next = data.nextStartPrimaryKey ? data.nextStartPrimaryKey[0].value : false
     }
     return res
+  },
+  update: (k, attrs, c = 'I') => {
+    const dA = [], puts = {}, incs = {}
+    for (const key in attrs) {
+      const a = attrs[key]
+      if (typeof a == 'object' && (a.del || a.inc)) {
+        if (a.del) dA.push(key)
+        if (a.inc) incs[key] = a.inc
+      } else puts[key] = a
+    }
+    return client.updateRow({ ...params(k, t, c), updateOfAttributeColumns: [{ 'PUT': columns(puts) }, {'DELETE_ALL': dA }, { 'INCREMENT': columns(incs) }] })
   }
 }
