@@ -1,3 +1,5 @@
+// https://github.com/yzITI/simple-aliyun-tablestore
+// 2021-11-18
 const TS = require('tablestore')
 
 const constants = {
@@ -49,17 +51,37 @@ const wrap = (k, row) => {
   return res
 }
 
-const columns = attrs => {
+const columns = as => {
+  delete as.id
   const res = []
-  for (const k in attrs) {
-    res.push({ [k]: Number.isInteger(a[k]) ? TS.Long.fromNumber(a[k]) : a[k] })
+  for (const k in as) {
+    res.push({ [k]: Number.isInteger(as[k]) ? TS.Long.fromNumber(as[k]) : as[k] })
   }
   return res
 }
 
 // Main interface
 exports.table = (t) => client && {
+  // basic
   get: (k, cols = []) => client.getRow({ ...params(k, t), columnsToGet: cols }).then(({ row }) => wrap(k, row)),
   put: (k, attrs, c = 'I') => client.putRow({ ...params(k, t, c), attributeColumns: columns(attrs) }),
-  del: (k, c = 'I') => client.deleteRow(params(k, t, c))
+  del: (k, c = 'I') => client.deleteRow(params(k, t, c)),
+  // advanced
+  getRange: async (start, end, cols = []) => {
+    let next = start, res = {}
+    while (next) {
+      const data = await client.getRange({
+        tableName: t, columnsToGet: cols,
+        direction: 'FORWARD',
+        inclusiveStartPrimaryKey: [{ id: next }],
+        exclusiveEndPrimaryKey: [{ id: end }]
+      })
+      for (const r of data.rows) {
+        const k = r.primaryKey[0].value
+        res[k] = wrap(k, r)
+      }
+      next = data.nextStartPrimaryKey ? data.nextStartPrimaryKey[0].value : false
+    }
+    return res
+  }
 }
