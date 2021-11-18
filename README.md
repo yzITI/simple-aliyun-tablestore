@@ -64,11 +64,25 @@ c = ['E', ['num', '==', 10], ['space', '>', 10]]
 
 ## 接口
 
+```js
+const SAT = require('./SAT.js')
+```
+
+### 辅助接口
+
+```js
+// 初始化
+SAT.init('endpoint', 'instancename', 'accessKeyId', 'accessKeySecret', 'securityToken')
+
+// 访问原始client对象
+SAT.client()
+```
+
+### 基础接口
+
 调用`SAT.table('tablename')`生成操作对象
 
 [例子](./example.js)
-
-### 基础接口
 
 ```js
 // 查询单行数据
