@@ -20,6 +20,7 @@ const SAT = require('./SAT.js')
 SAT.init('endpoint', 'instance', 'akId', 'akSecret')
 
 async function test () {
+  await SAT.table('tablename').put('rowid', { hello: 'world!' })
   const res = await SAT.table('tablename').get('rowid')
   console.log(res)
 }
@@ -108,8 +109,8 @@ SAT.table('tablename').del('id', c = 'I')
 ### 高级接口
 
 ```js
-// 扫描连续的id
-// 返回对象，键为行对应的id，值为行数据对象
+// 扫描连续的主键
+// 返回对象，键为行对应的主键逗号连接，值为行数据对象
 SAT.table('tablename').getRange('startid', 'endid', cols = [])
 
 // 更新
