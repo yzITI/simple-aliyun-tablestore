@@ -42,10 +42,17 @@ const condition = c => {
   return new TS.Condition(constants[rc], colCond)
 }
 
-const params = (k, t, c) => ({ tableName: t, primaryKey: [{ id: k }], condition: c && condition(c) })
+const pk = (k, pks) => {
+  const ks = (k instanceof Array) ? k : [k]
+  return pks.map((x, i) => ({ [x]: parseInt(ks[i]) }))
+}
 
-const wrap = (k, row) => {
-  const res = { id: k }
+const params = (k, c, t, pks) => ({ tableName: t, primaryKey: pk(k, pks), condition: c && condition(c) })
+
+const wrap = (k, row, pks) => {
+  if (!row.attributes) return null
+  const res = {}, ks = (k instanceof Array) ? k : [k] 
+  for (let i = 0; i < pks.length; i++) res[pks[i]] = ks[i]
   for (const a of row.attributes) {
     const v = a.columnValue
     res[a.columnName] = typeof v === 'object' ? v.toNumber() : v
@@ -61,11 +68,11 @@ const columns = as => {
 }
 
 // Main interface
-exports.table = (t) => client && {
+exports.table = (t, pks = ['id']) => client && {
   // basic
-  get: (k, cols = []) => client.getRow({ ...params(k, t), columnsToGet: cols }).then(({ row }) => wrap(k, row)),
-  put: (k, attrs, c = 'I') => client.putRow({ ...params(k, t, c), attributeColumns: columns(attrs) }),
-  del: (k, c = 'I') => client.deleteRow(params(k, t, c)),
+  get: (k, cols = []) => client.getRow({ ...params(k, null, t, pks), columnsToGet: cols }).then(({ row }) => wrap(k, row, pks)),
+  put: (k, attrs, c = 'I') => client.putRow({ ...params(k, c, t, pks), attributeColumns: columns(attrs) }),
+  del: (k, c = 'I') => client.deleteRow(params(k, c, t, pks)),
   // advanced
   getRange: async (start, end, cols = []) => {
     let next = start, res = {}
@@ -73,14 +80,14 @@ exports.table = (t) => client && {
       const data = await client.getRange({
         tableName: t, columnsToGet: cols,
         direction: 'FORWARD',
-        inclusiveStartPrimaryKey: [{ id: next }],
-        exclusiveEndPrimaryKey: [{ id: end }]
+        inclusiveStartPrimaryKey: pk(next, pks),
+        exclusiveEndPrimaryKey: pk(end, pks)
       })
       for (const r of data.rows) {
-        const k = r.primaryKey[0].value
-        res[k] = wrap(k, r)
+        const k = r.primaryKey.map(x => x.value)
+        res[k.join()] = wrap(k, r, pks)
       }
-      next = data.nextStartPrimaryKey ? data.nextStartPrimaryKey[0].value : false
+      next = data.nextStartPrimaryKey && data.nextStartPrimaryKey.map(x => x.value)
     }
     return res
   },
@@ -93,6 +100,10 @@ exports.table = (t) => client && {
         if (a.inc) incs[key] = a.inc
       } else puts[key] = a
     }
-    return client.updateRow({ ...params(k, t, c), updateOfAttributeColumns: [{ 'PUT': columns(puts) }, {'DELETE_ALL': dA }, { 'INCREMENT': columns(incs) }] })
+    return client.updateRow({ ...params(k, c, t, pks), updateOfAttributeColumns: [{ 'PUT': columns(puts) }, {'DELETE_ALL': dA }, { 'INCREMENT': columns(incs) }] })
   }
 }
+
+// utils
+exports.utils = { parseInt, condition, pk, params, wrap, columns }
+

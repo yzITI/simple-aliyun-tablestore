@@ -2,9 +2,9 @@
 
 阿里云表格存储功能强大，因而API非常繁琐，在只需要完成简单的数据存储功能时非常麻烦。此项目对阿里云的表格存储Nodejs SDK进行简化封装，用一部分功能的代价换取简单方便的接口，方便敏捷开发。此项目**省略的功能**包括：
 1. 版本：不考虑多版本表格，也不考虑数据写入的时间戳。
-2. 主键：主键永远是`id`。
-3. 表操作：不支持对表的操作，仅支持对数据的读写。
-4. 整数：整数数字会被自动转化为整数类型。
+2. 表操作：不支持对表的操作，仅支持对数据的读写。
+3. 整数：整数数字会被自动转化为整数类型。
+4. 主键：默认使用一个主键`id`，但是支持自定义主键和多主键，请参考[主键](#主键)
 
 [接口文档](#接口)
 
@@ -60,7 +60,14 @@ c = ['E', ['num', '==', 10], ['space', '>', 10]]
 
 上述例子中的条件表示：期望行存在 and num属性值等于10 and space属性值大于10
 
-当不需要列条件时，条件变量`c`可以省略为一个字符串，描述期望的行条件。
+**当不需要列条件时，条件变量`c`可以省略为一个字符串，描述期望的行条件。**
+
+### 主键
+
+若需要多个主键或自定义主键，需要在生成表的操作对象时指定，并在传入主键时按顺序传入数组，例如：
+```js
+SAT.table('tablename', ['pk1', 'pk2']).get(['pk1value', 123])
+```
 
 ## 接口
 
@@ -74,13 +81,16 @@ const SAT = require('./SAT.js')
 // 初始化
 SAT.init('endpoint', 'instancename', 'accessKeyId', 'accessKeySecret', 'securityToken')
 
-// 访问原始client对象
-SAT.client()
+// 访问原始client对象，若传入c，则使用c替换client
+SAT.client(c)
+
+// utils
+SAT.utils = { parseInt(v), condition(c), pk(k, pks), params(k, c, t, pks), wrap(k, row, pks), columns(attrs) }
 ```
 
 ### 基础接口
 
-调用`SAT.table('tablename')`生成操作对象
+调用`SAT.table('tablename')`生成操作对象。
 
 [例子](./example.js)
 

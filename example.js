@@ -31,3 +31,8 @@ async function update () {
   // increment with condition on columns
   await SAT.table('node').update('test', { num: { inc: -1 } }, ['E', ['num', '>', 0]])
 }
+
+async function multiplePK () {
+  const res = await SAT.table('table', ['pk1', 'pk2']).get(['pk1value', 123])
+  console.log(res)
+}
