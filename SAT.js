@@ -1,5 +1,5 @@
 // https://github.com/yzITI/simple-aliyun-tablestore
-// 2021-11-18
+// 2021-11-21
 const TS = require('tablestore')
 
 const constants = {
@@ -102,7 +102,26 @@ exports.table = (t, pks = ['id']) => client && {
     }
     return client.updateRow({ ...params(k, c, t, pks), updateOfAttributeColumns: [{ 'PUT': columns(puts) }, {'DELETE_ALL': dA }, { 'INCREMENT': columns(incs) }] })
   },
-  search: (query) => {
+  search: async (i, q) => {
+    const res = {}
+    const query = {
+      queryType: 3,
+      query: { fieldName: q[0], term: parseInt(q[1]) }
+    }
+    let nextToken = undefined
+    do {
+      const data = await client.search({
+        tableName: t, indexName: i,
+        searchQuery: { limit: 100, query, token: nextToken },
+        columnToGet: { returnType: 1 }
+      })
+      for (const r of data.rows) {
+        const k = r.primaryKey.map(x => x.value)
+        res[k.join()] = wrap(k, r, pks)
+      }
+      nextToken = data.nextToken
+    } while (nextToken.toString('base64'))
+    return res
   }
 }
 

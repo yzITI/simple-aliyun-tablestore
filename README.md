@@ -5,6 +5,7 @@
 2. 表操作：不支持对表的操作，仅支持对数据的读写。
 3. 整数：整数数字会被自动转化为整数类型。
 4. 主键：默认使用一个主键`id`，但是支持自定义主键和多主键，请参考[主键](#主键)
+5. 多元索引：仅支持少数多元索引功能
 
 [接口文档](#接口)
 
@@ -121,4 +122,8 @@ SAT.table('tablename').getRange('startid', 'endid', cols = [])
 // 若u为对象且u.del为真，则删除此属性
 // 若u为对象且u.inc存在，则自增此属性，步长为u.inc
 SAT.table('tablename').update('id', { 'keyToUpdate': u }, c = 'I')
+
+// 多元索引
+// 目前仅支持精确匹配
+SAT.table('tablename').search('index', ['fieldName', 'value'])
 ```
