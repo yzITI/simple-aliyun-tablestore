@@ -23,6 +23,11 @@ async function getRange () {
   console.log(res) // { 'someid': { ... }, ... }
 }
 
+async function getBatch () {
+  const res = await SAT.table('table').getBatch(['id1', 'id2', 'id3'])
+  console.log(res) // { 'someid': { ... }, ... }
+}
+
 async function update () {
   // update values
   await SAT.table('table').update('testid', { hello: 'hi', num: 3 })
@@ -30,6 +35,14 @@ async function update () {
   await SAT.table('table').update('testid', { hello: { del: 1 } })
   // increment with condition on columns
   await SAT.table('node').update('test', { num: { inc: -1 } }, ['E', ['num', '>', 0]])
+}
+
+async function updateBatch () {
+  await SAT.table('table').updateBatch([
+    ['id1', { hello: 'hi', num: 3 }, 'I'],
+    ['id2', { hello: { del: 1 } }],
+    ['id3', { num: { inc: -1 } }, ['E', ['num', '>', 0]]]
+  ])
 }
 
 async function multiplePK () {

@@ -1,5 +1,5 @@
 // https://github.com/yzITI/simple-aliyun-tablestore
-// 2021-11-21
+// 2021-12-06
 const TS = require('tablestore')
 
 const constants = {
@@ -49,7 +49,7 @@ const pk = (k, pks) => {
 
 const params = (k, c, t, pks) => ({ tableName: t, primaryKey: pk(k, pks), condition: c && condition(c) })
 
-const wrap = (k, row, pks) => {
+function wrap (k, row, pks) {
   if (!row.attributes) return null
   const res = {}, ks = (k instanceof Array) ? k : [k] 
   for (let i = 0; i < pks.length; i++) res[pks[i]] = ks[i]
@@ -60,11 +60,31 @@ const wrap = (k, row, pks) => {
   return res
 }
 
+function wrapRows (rows, pks, res) {
+  for (const r of rows) {
+    if (!r.primaryKey) continue
+    const k = r.primaryKey.map(x => x.value)
+    res[k.join()] = wrap(k, r, pks)
+  }
+}
+
 const columns = as => {
   delete as.id
   const res = []
   for (const k in as) res.push({ [k]: parseInt(as[k]) })
   return res
+}
+
+const attrColumns = attrs => {
+  const dA = [], puts = {}, incs = {}
+  for (const key in attrs) {
+    const a = attrs[key]
+    if (typeof a == 'object' && (a.del || a.inc)) {
+      if (a.del) dA.push(key)
+      if (a.inc) incs[key] = a.inc
+    } else puts[key] = a
+  }
+  return [{ 'PUT': columns(puts) }, {'DELETE_ALL': dA }, { 'INCREMENT': columns(incs) }]
 }
 
 // Main interface
@@ -77,48 +97,25 @@ exports.table = (t, pks = ['id']) => client && {
   getRange: async (start, end, cols = []) => {
     let next = start, res = {}
     while (next) {
-      const data = await client.getRange({
-        tableName: t, columnsToGet: cols,
-        direction: 'FORWARD',
-        inclusiveStartPrimaryKey: pk(next, pks),
-        exclusiveEndPrimaryKey: pk(end, pks)
-      })
-      for (const r of data.rows) {
-        const k = r.primaryKey.map(x => x.value)
-        res[k.join()] = wrap(k, r, pks)
-      }
+      const data = await client.getRange({ tableName: t, columnsToGet: cols, direction: 'FORWARD', inclusiveStartPrimaryKey: pk(next, pks), exclusiveEndPrimaryKey: pk(end, pks) })
+      wrapRows(data.rows, pks, res)
       next = data.nextStartPrimaryKey && data.nextStartPrimaryKey.map(x => x.value)
     }
     return res
   },
-  update: (k, attrs, c = 'I') => {
-    const dA = [], puts = {}, incs = {}
-    for (const key in attrs) {
-      const a = attrs[key]
-      if (typeof a == 'object' && (a.del || a.inc)) {
-        if (a.del) dA.push(key)
-        if (a.inc) incs[key] = a.inc
-      } else puts[key] = a
-    }
-    return client.updateRow({ ...params(k, c, t, pks), updateOfAttributeColumns: [{ 'PUT': columns(puts) }, {'DELETE_ALL': dA }, { 'INCREMENT': columns(incs) }] })
+  getBatch: async (ks, cols = []) => {
+    const res = {}, data = await client.batchGetRow({ tables: [{ tableName: t, primaryKey: ks.map(x => pk(x, pks)), columnsToGet: cols }] })
+    wrapRows(data.tables[0], pks, res)
+    return res
   },
+  update: (k, attrs, c = 'I') => client.updateRow({ ...params(k, c, t, pks), updateOfAttributeColumns: attrColumns(attrs) }),
+  updateBatch: rows => client.batchWriteRow({ tables: [{ tableName: t, rows: rows.map(r => ({ type: 'UPDATE', attributeColumns: attrColumns(r[1]), ...params(r[0], r[2] || 'I', t, pks) })) }] }),
   search: async (i, q) => {
-    const res = {}
-    const query = {
-      queryType: 3,
-      query: { fieldName: q[0], term: parseInt(q[1]) }
-    }
+    const res = {}, query = { queryType: 3, query: { fieldName: q[0], term: parseInt(q[1]) } }
     let nextToken = undefined
     do {
-      const data = await client.search({
-        tableName: t, indexName: i,
-        searchQuery: { limit: 100, query, token: nextToken },
-        columnToGet: { returnType: 1 }
-      })
-      for (const r of data.rows) {
-        const k = r.primaryKey.map(x => x.value)
-        res[k.join()] = wrap(k, r, pks)
-      }
+      const data = await client.search({ tableName: t, indexName: i, searchQuery: { limit: 100, query, token: nextToken }, columnToGet: { returnType: 1 } })
+      wrapRows(data.rows, pks, res)
       nextToken = data.nextToken
     } while (nextToken.toString('base64'))
     return res
@@ -126,5 +123,4 @@ exports.table = (t, pks = ['id']) => client && {
 }
 
 // utils
-exports.utils = { parseInt, condition, pk, params, wrap, columns }
-
+exports.utils = { parseInt, condition, pk, params, wrap, wrapRows, columns, attrColumns }

@@ -89,7 +89,7 @@ SAT.init('endpoint', 'instancename', 'accessKeyId', 'accessKeySecret', 'security
 SAT.client(c)
 
 // utils
-SAT.utils = { parseInt(v), condition(c), pk(k, pks), params(k, c, t, pks), wrap(k, row, pks), columns(attrs) }
+SAT.utils = { parseInt(v), condition(c), pk(k, pks), params(k, c, t, pks), wrap(k, row, pks), wrapRows(rows, pks, res), columns(attrs), attrColumns(attrs) }
 ```
 
 ### 基础接口
@@ -116,12 +116,23 @@ SAT.table('tablename').del('id', c = 'I')
 // 返回对象，键为行对应的主键逗号连接，值为行数据对象
 SAT.table('tablename').getRange('startid', 'endid', cols = [])
 
+// 批量读取，有个数上限，与官方上限一致
+// 返回对象，键为行对应的主键逗号连接，值为行数据对象
+SAT.table('tablename').getBatch(['id1', 'id2', 'id3'], cols = [])
+
 // 更新
 // u为更新内容：
 // 若u不为对象，则理解为更新属性值
 // 若u为对象且u.del为真，则删除此属性
 // 若u为对象且u.inc存在，则自增此属性，步长为u.inc
 SAT.table('tablename').update('id', { 'keyToUpdate': u }, c = 'I')
+
+// 批量更新
+// 接受数组，每个项目为一个数组，与update的参数一致
+SAT.table('tablename').updateBatch([
+  ['id1', { hello: 'hi' }, 'I'],
+  ['id2', { hello: { del: 1 } }]
+])
 
 // 多元索引
 // 目前仅支持精确匹配
