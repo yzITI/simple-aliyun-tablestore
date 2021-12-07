@@ -127,11 +127,14 @@ SAT.table('tablename').getBatch(['id1', 'id2', 'id3'], cols = [])
 // 若u为对象且u.inc存在，则自增此属性，步长为u.inc
 SAT.table('tablename').update('id', { 'keyToUpdate': u }, c = 'I')
 
-// 批量更新
-// 接受数组，每个项目为一个数组，与update的参数一致
-SAT.table('tablename').updateBatch([
-  ['id1', { hello: 'hi' }, 'I'],
-  ['id2', { hello: { del: 1 } }]
+// 批量写入
+// 接受数组，每个项目为一个数组描述一个写入操作
+// 写入操作的第一个项目为写入类型，支持UPDATE, PUT, DELETE
+// 第二个项目开始，与update, put, del的参数一致
+SAT.table('tablename').writeBatch([
+  ['PUT', 'id1', { hello: 'hi' }, 'I'],
+  ['UPDATE', 'id2', { hello: { del: 1 } }],
+  ['DELETE', 'id3']
 ])
 
 // 多元索引

@@ -109,7 +109,7 @@ exports.table = (t, pks = ['id']) => client && {
     return res
   },
   update: (k, attrs, c = 'I') => client.updateRow({ ...params(k, c, t, pks), updateOfAttributeColumns: attrColumns(attrs) }),
-  updateBatch: rows => client.batchWriteRow({ tables: [{ tableName: t, rows: rows.map(r => ({ type: 'UPDATE', attributeColumns: attrColumns(r[1]), ...params(r[0], r[2] || 'I', t, pks) })) }] }),
+  writeBatch: rows => client.batchWriteRow({ tables: [{ tableName: t, rows: rows.map(r => ({ type: r[0], attributeColumns: attrColumns(r[2]), ...params(r[1], r[3] || 'I', t, pks) })) }] }),
   search: async (i, q) => {
     const res = {}, query = { queryType: 3, query: { fieldName: q[0], term: parseInt(q[1]) } }
     let nextToken = undefined

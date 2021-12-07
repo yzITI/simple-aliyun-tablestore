@@ -37,11 +37,11 @@ async function update () {
   await SAT.table('node').update('test', { num: { inc: -1 } }, ['E', ['num', '>', 0]])
 }
 
-async function updateBatch () {
-  await SAT.table('table').updateBatch([
-    ['id1', { hello: 'hi', num: 3 }, 'I'],
-    ['id2', { hello: { del: 1 } }],
-    ['id3', { num: { inc: -1 } }, ['E', ['num', '>', 0]]]
+async function writeBatch () {
+  SAT.table('tablename').writeBatch([
+    ['PUT', 'id1', { hello: 'hi' }, 'I'],
+    ['UPDATE', 'id2', { hello: { del: 1 } }],
+    ['DELETE', 'id3']
   ])
 }
 
