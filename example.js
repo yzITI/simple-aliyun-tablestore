@@ -1,4 +1,6 @@
-const SAT = require('./SAT.js')
+const SAT = require('simple-aliyun-tablestore')
+// if use directly from SAT.js
+// const SAT = require('./SAT.js')
 
 SAT.init('endpoint', 'instance', 'akId', 'akSecret', 'possible STS')
 

@@ -1,14 +1,11 @@
 {
-  "dependencies": {
-    "tablestore": "^5.0.7"
-  },
   "name": "simple-aliyun-tablestore",
   "description": "SAT, 简化的阿里云表格存储TableStore Nodejs SDK，适合小型项目快速构建。",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "SAT.js",
   "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "dependencies": {
+    "tablestore": "^5.0.7"
   },
   "repository": {
     "type": "git",
