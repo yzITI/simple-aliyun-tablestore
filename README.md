@@ -11,12 +11,14 @@
 
 ## 开始使用
 
-为了支持函数计算等应用场景，请直接复制`/SAT.js`。
+```
+npm i simple-aliyun-tablestore
+```
 
-需要先安装官方的Nodejs SDK: `npm i tablestore`
+> 为了支持函数计算等应用场景，在已经安装官方Nodejs SDK `tablestore`的前提下，您可以直接复制文件`/SAT.js`，并通过`require('./SAT.js')`的方式引入。
 
 ```js
-const SAT = require('./SAT.js')
+const SAT = require('SAT.js')
 
 SAT.init('endpoint', 'instance', 'akId', 'akSecret')
 
@@ -76,7 +78,7 @@ const res = await opt.get(['pk1value', 123])
 ## 接口
 
 ```js
-const SAT = require('./SAT.js')
+const SAT = require('SAT.js')
 ```
 
 ### 辅助接口

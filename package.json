@@ -1,5 +1,28 @@
 {
   "dependencies": {
     "tablestore": "^5.0.7"
-  }
+  },
+  "name": "simple-aliyun-tablestore",
+  "description": "SAT, 简化的阿里云表格存储TableStore Nodejs SDK，适合小型项目快速构建。",
+  "version": "1.0.0",
+  "main": "SAT.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yzITI/simple-aliyun-tablestore.git"
+  },
+  "keywords": [
+    "aliyun",
+    "tablestore",
+    "serverless"
+  ],
+  "author": "yzITI",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/yzITI/simple-aliyun-tablestore/issues"
+  },
+  "homepage": "https://github.com/yzITI/simple-aliyun-tablestore#readme"
 }
