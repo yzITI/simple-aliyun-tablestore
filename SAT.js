@@ -1,5 +1,5 @@
 // https://github.com/yzITI/simple-aliyun-tablestore
-// 2021-12-06
+// 2021-12-27
 const TS = require('tablestore')
 
 const constants = {
@@ -16,7 +16,9 @@ const constants = {
 
   'NOT': 1, '!': 1,
   'AND': 2, '&&': 2,
-  'OR': 3, '||': 3
+  'OR': 3, '||': 3,
+  
+  'put': 'PUT', 'update': 'UPDATE', 'del': 'DELETE'
 }
 
 let client = null
@@ -104,12 +106,24 @@ exports.table = (t, pks = ['id']) => client && {
     return res
   },
   getBatch: async (ks, cols = []) => {
-    const res = {}, data = await client.batchGetRow({ tables: [{ tableName: t, primaryKey: ks.map(x => pk(x, pks)), columnsToGet: cols }] })
-    wrapRows(data.tables[0], pks, res)
+    const res = {}, kst = [...ks], opts = []
+    while (kst.length) {
+      const ksp = kst.splice(0, 100)
+      opts.push(client.batchGetRow({ tables: [{ tableName: t, primaryKey: ksp.map(x => pk(x, pks)), columnsToGet: cols }] }))
+    }
+    const vs = await Promise.all(opts)
+    for (const v of vs) wrapRows(v.tables[0], pks, res)
     return res
   },
   update: (k, attrs, c = 'I') => client.updateRow({ ...params(k, c, t, pks), updateOfAttributeColumns: attrColumns(attrs) }),
-  writeBatch: rows => client.batchWriteRow({ tables: [{ tableName: t, rows: rows.map(r => ({ type: r[0], attributeColumns: attrColumns(r[2]), ...params(r[1], r[3] || 'I', t, pks) })) }] }),
+  writeBatch: rows => {
+    const rowst = [...rows], opts = []
+    while (rowst.length) {
+      const rowsp = rowst.splice(0, 100)
+      opts.push(client.batchWriteRow({ tables: [{ tableName: t, rows: rowsp.map(r => ({ type: constants[r[0]] || r[0], attributeColumns: attrColumns(r[2]), ...params(r[1], r[3] || 'I', t, pks) })) }] }))
+    }
+    return Promise.all(opts)
+  },
   search: async (i, q) => {
     const res = {}, query = { queryType: 3, query: { fieldName: q[0], term: parseInt(q[1]) } }
     let nextToken = undefined

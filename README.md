@@ -118,7 +118,7 @@ SAT.table('tablename').del('id', c = 'I')
 // 返回对象，键为行对应的主键逗号连接，值为行数据对象
 SAT.table('tablename').getRange('startid', 'endid', cols = [])
 
-// 批量读取，有个数上限，与官方上限一致
+// 批量读取，自动分片
 // 返回对象，键为行对应的主键逗号连接，值为行数据对象
 SAT.table('tablename').getBatch(['id1', 'id2', 'id3'], cols = [])
 
@@ -129,14 +129,14 @@ SAT.table('tablename').getBatch(['id1', 'id2', 'id3'], cols = [])
 // 若u为对象且u.inc存在，则自增此属性，步长为u.inc
 SAT.table('tablename').update('id', { 'keyToUpdate': u }, c = 'I')
 
-// 批量写入
+// 批量写入，自动分片
 // 接受数组，每个项目为一个数组描述一个写入操作
-// 写入操作的第一个项目为写入类型，支持UPDATE, PUT, DELETE
+// 写入操作的第一个项目为写入类型，支持put(PUT), update(UPDATE), del(DELETE)
 // 第二个项目开始，与update, put, del的参数一致
 SAT.table('tablename').writeBatch([
-  ['PUT', 'id1', { hello: 'hi' }, 'I'],
-  ['UPDATE', 'id2', { hello: { del: 1 } }],
-  ['DELETE', 'id3']
+  ['put', 'id1', { hello: 'hi' }, 'I'],
+  ['update', 'id2', { hello: { del: 1 } }],
+  ['del', 'id3']
 ])
 
 // 多元索引
