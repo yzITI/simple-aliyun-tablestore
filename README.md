@@ -23,9 +23,9 @@ const SAT = require('simple-aliyun-tablestore')
 SAT.init('endpoint', 'instance', 'akId', 'akSecret')
 
 async function test () {
-  const opt = SAT.table('tablename')
-  await opt.put('rowid', { hello: 'world!' })
-  const res = await opt.get('rowid')
+  const table = SAT('tablename')
+  await table.put('rowid', { hello: 'world!' })
+  const res = await table.get('rowid')
   console.log(res)
 }
 test()
@@ -71,7 +71,7 @@ c = ['E', ['num', '==', 10], ['space', '>', 10]]
 
 若需要多个主键或自定义主键，需要在生成表的操作对象时指定，并在传入主键时按顺序传入数组，例如：
 ```js
-const opt = SAT.table('tablename', ['pk1', 'pk2'])
+const opt = SAT('tablename', ['pk1', 'pk2'])
 const res = await opt.get(['pk1value', 123])
 ```
 
@@ -96,19 +96,19 @@ SAT.utils = { parseInt(v), condition(c), pk(k, pks), params(k, c, t, pks), wrap(
 
 ### 基础接口
 
-调用`SAT.table('tablename')`生成操作对象。
+调用`SAT('tablename')`生成操作对象。
 
 [例子](./example.js)
 
 ```js
 // 查询单行数据
-SAT.table('tablename').get('id', cols = [])
+SAT('tablename').get('id', cols = [])
 
 // 覆盖单行数据
-SAT.table('tablename').put('id', { keys: 'values' }, c = 'I')
+SAT('tablename').put('id', { keys: 'values' }, c = 'I')
 
 // 删除单行数据
-SAT.table('tablename').del('id', c = 'I')
+SAT('tablename').del('id', c = 'I')
 ```
 
 ### 高级接口
@@ -116,24 +116,24 @@ SAT.table('tablename').del('id', c = 'I')
 ```js
 // 扫描连续的主键
 // 返回对象，键为行对应的主键逗号连接，值为行数据对象
-SAT.table('tablename').getRange('startid', 'endid', cols = [])
+SAT('tablename').getRange('startid', 'endid', cols = [])
 
 // 批量读取，自动分片
 // 返回对象，键为行对应的主键逗号连接，值为行数据对象
-SAT.table('tablename').getBatch(['id1', 'id2', 'id3'], cols = [])
+SAT('tablename').getBatch(['id1', 'id2', 'id3'], cols = [])
 
 // 更新
 // u为更新内容：
 // 若u不为对象，则理解为更新属性值
 // 若u为对象且u.del为真，则删除此属性
 // 若u为对象且u.inc存在，则自增此属性，步长为u.inc
-SAT.table('tablename').update('id', { 'keyToUpdate': u }, c = 'I')
+SAT('tablename').update('id', { 'keyToUpdate': u }, c = 'I')
 
 // 批量写入，自动分片
 // 接受数组，每个项目为一个数组描述一个写入操作
 // 写入操作的第一个项目为写入类型，支持put(PUT), update(UPDATE), del(DELETE)
 // 第二个项目开始，与update, put, del的参数一致
-SAT.table('tablename').writeBatch([
+SAT('tablename').writeBatch([
   ['put', 'id1', { hello: 'hi' }, 'I'],
   ['update', 'id2', { hello: { del: 1 } }],
   ['del', 'id3']
@@ -141,5 +141,5 @@ SAT.table('tablename').writeBatch([
 
 // 多元索引
 // 目前仅支持精确匹配
-SAT.table('tablename').search('index', ['fieldName', 'value'])
+SAT('tablename').search('index', ['fieldName', 'value'])
 ```

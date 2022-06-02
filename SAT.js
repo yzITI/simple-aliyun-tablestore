@@ -1,5 +1,5 @@
 // https://github.com/yzITI/simple-aliyun-tablestore
-// 2021-12-27
+// 2022-06-01
 const TS = require('tablestore')
 
 const constants = {
@@ -22,10 +22,6 @@ const constants = {
 }
 
 let client = null
-
-exports.init = (endpoint, instancename, accessKeyId, accessKeySecret, securityToken) => client = new TS.Client({ endpoint, instancename, accessKeyId, accessKeySecret, securityToken })
-
-exports.client = c => c ? client = c : client
 
 // utils functions
 const parseInt = v => Number.isInteger(v) ? TS.Long.fromNumber(v) : v
@@ -90,7 +86,7 @@ const attrColumns = attrs => {
 }
 
 // Main interface
-exports.table = (t, pks = ['id']) => client && {
+const SAT = (t, pks = ['id']) => client && {
   // basic
   get: (k, cols = []) => client.getRow({ ...params(k, null, t, pks), columnsToGet: cols }).then(({ row }) => wrap(k, row, pks)),
   put: (k, attrs, c = 'I') => client.putRow({ ...params(k, c, t, pks), attributeColumns: columns(attrs) }),
@@ -136,5 +132,10 @@ exports.table = (t, pks = ['id']) => client && {
   }
 }
 
-// utils
-exports.utils = { parseInt, condition, pk, params, wrap, wrapRows, columns, attrColumns }
+module.exports = SAT
+
+SAT.init = (endpoint, instancename, accessKeyId, accessKeySecret, securityToken) => client = new TS.Client({ endpoint, instancename, accessKeyId, accessKeySecret, securityToken })
+
+SAT.client = c => c ? client = c : client
+
+SAT.utils = { parseInt, condition, pk, params, wrap, wrapRows, columns, attrColumns }
