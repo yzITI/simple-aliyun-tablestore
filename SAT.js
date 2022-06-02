@@ -1,5 +1,5 @@
 // https://github.com/yzITI/simple-aliyun-tablestore
-// 2022-06-01
+// v1.2.1 2022-06-01
 const TS = require('tablestore')
 
 const constants = {
