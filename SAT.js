@@ -1,5 +1,5 @@
 // https://github.com/yzITI/simple-aliyun-tablestore
-// v1.2.2 2022-06-07
+// v1.2.3 2022-09-05
 const TS = require('tablestore')
 
 const constants = {
@@ -63,6 +63,7 @@ function wrapRows (rows, pks, res) {
 }
 
 const columns = (as, pks) => {
+  if (!as) return []
   for (const k of pks) delete as[k]
   const res = []
   for (const k in as) res.push({ [k]: int2Long(as[k]) })
@@ -112,7 +113,7 @@ const SAT = (t, pks = ['id']) => client && {
     const rowst = [...rows], opts = []
     while (rowst.length) {
       const rowsp = rowst.splice(0, 100)
-      opts.push(client.batchWriteRow({ tables: [{ tableName: t, rows: rowsp.map(r => ({ type: r[0].toUpperCase(), attributeColumns: r[0].toUpperCase() === 'UPDATE' ? attrColumns(r[2], pks) : columns(r[2], pks), ...params(r[1], r[3] || 'I', t, pks) })) }] }))
+      opts.push(client.batchWriteRow({ tables: [{ tableName: t, rows: rowsp.map(r => ({ type: r[0].toUpperCase() === 'DEL' ? 'DELETE' : r[0].toUpperCase(), attributeColumns: r[0].toUpperCase() === 'UPDATE' ? attrColumns(r[2], pks) : columns(r[2], pks), ...params(r[1], r[3] || 'I', t, pks) })) }] }))
     }
     return Promise.all(opts)
   },

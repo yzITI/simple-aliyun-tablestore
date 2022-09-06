@@ -1,7 +1,7 @@
 {
   "name": "simple-aliyun-tablestore",
   "description": "SAT, 简化的阿里云表格存储TableStore Nodejs SDK，适合小型项目快速构建。",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "main": "SAT.js",
   "devDependencies": {},
   "dependencies": {
